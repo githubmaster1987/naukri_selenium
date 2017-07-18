@@ -176,9 +176,9 @@ def create_url():
             post_date_str = job_listing.find_element_by_xpath("//div[@class='rec_details']/span").text
 
             print "Job Index=", job_ind, " Post Date =", post_date_str
-            # if ("Today" in post_date_str) or ("day ago" in post_date_str):
-            #     stop_find_job = True
-            #     break
+            if ("Today" in post_date_str) or ("day ago" in post_date_str):
+                stop_find_job = True
+                break
 
             job_listing.click()
             driver.switch_to.window(driver.window_handles[1])
