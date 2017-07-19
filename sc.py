@@ -42,7 +42,6 @@ global_s = Scraper(
     )
 
 output_file = "output.csv"
-total_cnt = 0
 
 DRIVER_WAITING_SECONDS                  = 60
 DRIVER_MEDIUM_WAITING_SECONDS           = 10
@@ -56,6 +55,8 @@ username = config.username
 userpwd = config.userpwd
 
 keywords = config.keywords
+
+total_applied_job_count = 0
 
 class AnyEc:
     """ Use with WebDriverWait to combine expected_conditions
@@ -88,7 +89,7 @@ def show_exception_detail(e):
     print("{}, {}, {}".format(exc_type, fname, str(exc_tb.tb_lineno)))
 
 def create_url():
-    global driver, start_url, total_cnt
+    global driver, start_url, total_applied_job_count
     
     # @todo Check to make sure that we have the information needed for this retailer in the DB
     try:
@@ -113,160 +114,172 @@ def create_url():
         pwd_obj.send_keys(Keys.ENTER)
         wait_medium()
         
-        driver.get(start_url)
-        wait()
+        for key_index, keyword in enumerate(keywords):
+            wait_medium()
+            driver.get(start_url)
+            wait()
 
-        search_div = driver.find_element_by_xpath("//div[@class='qsbfield']")
+            search_div = driver.find_element_by_xpath("//div[@class='qsbfield']")
 
-        #finance, mumbai, 5, 8
-        skill_item = search_div.find_element_by_xpath("//div[@id='skill']//input")
-        skill_item.click()
-        skill_item.send_keys(keywords[0]["Skill"])
-        wait()
+            #finance, mumbai, 5, 8
+            skill_item = search_div.find_element_by_xpath("//div[@id='skill']//input")
+            skill_item.click()
+            skill_item.send_keys(keyword["Skill"])
+            wait()
 
-        location_item = search_div.find_element_by_xpath("//div[@id='location']//input")
-        location_item.click()
-        location_item.send_keys(keywords[0]["Location"])
-        wait()
+            location_item = search_div.find_element_by_xpath("//div[@id='location']//input")
+            location_item.click()
+            location_item.send_keys(keyword["Location"])
+            wait()
 
-        experience_item = search_div.find_element_by_xpath("//div[@id='exp_dd']//input")
-        experience_item.click()
+            experience_item = search_div.find_element_by_xpath("//div[@id='exp_dd']//input")
+            experience_item.click()
 
-        li_divs = search_div.find_elements_by_xpath("//div[@id='exp_dd']/div[@class='sDrop']//ul/li")
-        print "Experience Len=", len(li_divs)
+            li_divs = search_div.find_elements_by_xpath(".//div[@id='exp_dd']/div[@class='sDrop']//ul/li")
+            print "Experience Len=", len(li_divs)
 
-        for li_div in li_divs:
-            if li_div.text.strip() == str(keywords[0]["Experience"]):
-                print "Select", li_div.text
-                li_div.click()
+            for li_div in li_divs:
+                if li_div.text.strip() == str(keyword["Experience"]):
+                    print "Select", li_div.text
+                    li_div.click()
 
-        wait()
+            wait()
 
-        salary_item = search_div.find_element_by_xpath(".//div[@id='salary_dd']//input")
-        salary_item.click()
-        li_divs = search_div.find_elements_by_xpath("//div[@id='salary_dd']/div[@class='sDrop']//ul/li")
-        print "Experience Len=", len(li_divs)
+            salary_item = search_div.find_element_by_xpath(".//div[@id='salary_dd']//input")
+            salary_item.click()
+            li_divs = search_div.find_elements_by_xpath(".//div[@id='salary_dd']/div[@class='sDrop']//ul/li")
+            print "Experience Len=", len(li_divs)
 
-        for li_div in li_divs:
-            if li_div.text.strip() == str(keywords[0]["Salary"]):
-                print "Select", li_div.text
-                li_div.click()
+            for li_div in li_divs:
+                if li_div.text.strip() == str(keyword["Salary"]):
+                    print "Select", li_div.text
+                    li_div.click()
 
-        wait()
-        
-        print "Click submit to search"
-        driver.find_element_by_xpath("//button[@id='qsbFormBtn']").click()
-        wait_medium()
-
-        print "Sort by date"        
-        sort_div = driver.find_element_by_xpath("//div[@class='sortBy']")
-        sort_div.click()
-        wait()
-        sort_div.find_element_by_xpath("//ul[@class='list']/li[contains(text(), 'Date')]").click()
-
-        print "Loading job listing"
-        job_listings = driver.find_elements_by_xpath("//div[contains(@class, 'srp_container fl')]//div[@type='tuple']")
-        stop_find_job = False
-
-        main_window_handle = driver.window_handles[0]
-        
-        print "Jobs = ", len(job_listings)
-        for job_ind, job_listing in enumerate(job_listings):
-            driver.switch_to.window(main_window_handle)
-            post_date_str = job_listing.find_element_by_xpath("//div[@class='rec_details']/span").text
-
-            print "Job Index=", job_ind, " Post Date =", post_date_str
-            # if ("Today" in post_date_str) or ("day ago" in post_date_str):
-            #     stop_find_job = True
-            #     break
-
-            job_listing.click()
-            driver.switch_to.window(driver.window_handles[1])
+            wait()
+            
+            print "Click submit to search"
+            driver.find_element_by_xpath("//button[@id='qsbFormBtn']").click()
             wait_medium()
 
-            # url = "https://www.naukri.com/job-listings-Strategic-Account-Manager-Japanese-Clients-Dimension-Data-India-Pvt-Ltd-Mumbai-4-to-9-years-040717003261?src=sortby&sid=15004307983089&xp=2&qp=finance&srcPage=s"
-            # driver.get(url)
-            # wait_medium()
+            print "Sort by date"        
+            sort_div = driver.find_element_by_xpath("//div[@class='sortBy']")
+            sort_div.click()
+            wait()
+            sort_div.find_element_by_xpath("//ul[@class='list']/li[contains(text(), 'Date')]").click()
 
-            WebDriverWait(driver, DRIVER_WAITING_SECONDS).until(
-                AnyEc(
-                    EC.presence_of_element_located(
-                        (By.XPATH, "//button[contains(text(), 'Apply')]")
-                    ),
-                    EC.presence_of_element_located(
-                        (By.XPATH, "//a[contains(text(), 'Apply')]")
-                    )
-                )
-            )
+            print "Loading job listing"
+            job_listings = driver.find_elements_by_xpath("//div[contains(@class, 'srp_container fl')]//div[@type='tuple']")
+            stop_find_job = False
 
-            print "Find Apply Button"
-            apply_btn = None
-            try:
-                apply_btn = driver.find_element_by_xpath("//button[contains(text(), 'Apply')]")
-            except Exception as e:
-                #print e
-                try:
-                    apply_btn = driver.find_element_by_xpath("//a[contains(text(), 'Apply')]")
-                except Exception as e:
-                    #print e
-                    pass
+            main_window_handle = driver.window_handles[0]
             
-            #print apply_btn
+            print "Jobs = ", len(job_listings)
 
-            if apply_btn != None:
-                actions = ActionChains(driver)
-                actions.move_to_element(apply_btn)
-                actions.click(apply_btn)
-                actions.perform()
-                #apply_btn.click()
+            for job_ind, job_listing in enumerate(job_listings):
+                driver.switch_to.window(main_window_handle)
+                post_date_str = job_listing.find_element_by_xpath("//div[@class='rec_details']/span").text
+
+                print "****************************"
+                print "Search Index = ", key_index
+                print keyword
+                print "Applied Job = ", total_applied_job_count, " Job Index=", job_ind, " Post Date =", post_date_str
+                print "****************************"
+
+                if ("Today" in post_date_str) or ("day ago" in post_date_str):
+                    stop_find_job = True
+                    break
+
+                job_listing.click()
+                driver.switch_to.window(driver.window_handles[1])
                 wait_medium()
-                   
-            else:
-                print "Not found apply button"
-                continue
 
-            print "Find Skip Link Button"
-            try:
+                # url = "https://www.naukri.com/job-listings-Strategic-Account-Manager-Japanese-Clients-Dimension-Data-India-Pvt-Ltd-Mumbai-4-to-9-years-040717003261?src=sortby&sid=15004307983089&xp=2&qp=finance&srcPage=s"
+                # driver.get(url)
+                # wait_medium()
+
                 WebDriverWait(driver, DRIVER_WAITING_SECONDS).until(
                     AnyEc(
                         EC.presence_of_element_located(
-                            (By.XPATH, "//a[@id='skip_qup']")
+                            (By.XPATH, "//button[contains(text(), 'Apply')]")
                         ),
                         EC.presence_of_element_located(
-                            (By.XPATH, "//a[@id='qup_skip']")
-                        ),
-                        EC.presence_of_element_located(
-                            (By.XPATH, "//button[@id='qupSubmit']")
-                        ),
-                        EC.presence_of_element_located(
-                            (By.XPATH, "//button[@id='qusSubmit']")
-                        ),
+                            (By.XPATH, "//a[contains(text(), 'Apply')]")
+                        )
                     )
                 )
-            except TimeoutException as t:
-                #print t
-                driver.close()
-                continue
-            
-            if skip_and_apply(driver) == False:
-                # Skip and apply not found
-                print "Update and Apply button detect"
-                update_and_apply(driver) 
-            
-            for i, handle in enumerate(driver.window_handles):
-                if i != 0:
-                    driver.switch_to.window(handle)
-                    driver.close()
+
+                print "Find Apply Button"
+                apply_btn = None
+                try:
+                    apply_btn = driver.find_element_by_xpath("//button[contains(text(), 'Apply')]")
+                except Exception as e:
+                    #print e
+                    try:
+                        apply_btn = driver.find_element_by_xpath("//a[contains(text(), 'Apply')]")
+                    except Exception as e:
+                        #print e
+                        pass
+                
+                #print apply_btn
+
+                if apply_btn != None:
+                    actions = ActionChains(driver)
+                    actions.move_to_element(apply_btn)
+                    actions.click(apply_btn)
+                    actions.perform()
+                    #apply_btn.click()
+                    wait_medium()
+                       
+                else:
+                    print "Not found apply button"
+                    continue
+
+                print "Find Skip Link & Apply Job Button"
+                try:
+                    WebDriverWait(driver, DRIVER_WAITING_SECONDS).until(
+                        AnyEc(
+                            EC.presence_of_element_located(
+                                (By.XPATH, "//a[@id='skip_qup']")
+                            ),
+                            EC.presence_of_element_located(
+                                (By.XPATH, "//a[@id='qup_skip']")
+                            ),
+                            EC.presence_of_element_located(
+                                (By.XPATH, "//button[@id='qupSubmit']")
+                            ),
+                            EC.presence_of_element_located(
+                                (By.XPATH, "//button[@id='qusSubmit']")
+                            ),
+                        )
+                    )
+                except TimeoutException as t:
+                    print 'Not found any job submit button'
+                    close_tabs(driver)
+                    continue
+                
+                if skip_and_apply(driver) == False:
+                    # Skip and apply not found
+                    print "Update and Apply button detect"
+                    update_and_apply(driver, keyword) 
+                
+                close_tabs(driver)
        
     except TimeoutException as ex:
         print('***********Exception1*************')
         show_exception_detail(ex)
 
-    # except Exception, e:
-    #     print('***********Exception2*************')
-    #     show_exception_detail(e)
+    except Exception, e:
+        print('***********Exception2*************')
+        show_exception_detail(e)
 
+def close_tabs(self_driver):
+    driver = self_driver
+
+    while len(driver.window_handles) > 1:
+        driver.switch_to.window(driver.window_handles[1])
+        driver.close()
 def skip_and_apply(self_driver):
+    global total_applied_job_count
     driver = self_driver
     skip_link = None
 
@@ -286,11 +299,16 @@ def skip_and_apply(self_driver):
         actions.click(skip_link)
         actions.perform()
         wait_medium()
+
+        total_applied_job_count += 1
+
+        print "Click skip and apply button"
         return True
 
     return False
 
 def question_apply(self_driver):
+    global total_applied_job_count
     submit_btn = driver.find_element_by_xpath("//button[@id='qusSubmit']")
 
     question_divs = driver.find_elements_by_xpath("//div[@class='row txtL']")
@@ -321,7 +339,7 @@ def question_apply(self_driver):
 
     skip_and_apply(driver)
 
-def update_and_apply(self_driver):
+def update_and_apply(self_driver, keyword):
     driver = self_driver
 
     button_value_str = ""
@@ -345,7 +363,7 @@ def update_and_apply(self_driver):
         
         select_job_location = False
         for i, li_div in enumerate(preferred_job_location):
-            if li_div.text.lower().strip() == keywords[0]["Location"].lower():
+            if li_div.text.lower().strip() == keyword["Location"].lower():
                 print "Select Location", li_div.text
                 li_div.click()
                 select_job_location = True
@@ -377,7 +395,7 @@ def update_and_apply(self_driver):
         current_salary_drop = current_salary_div.find_elements_by_xpath(".//div[@class='sDrop']//ul/li")
 
         for li_div in current_salary_drop:
-            if li_div.text.strip() == str(keywords[0]["Salary"]):
+            if li_div.text.strip() == str(keyword["Salary"]):
                 actions = ActionChains(driver)
                 actions.move_to_element(li_div)
                 actions.click(li_div)
@@ -491,6 +509,31 @@ def update_and_apply(self_driver):
     except:
         print "Not Found Passing Year Part"
 
+    print "Try to find industry"
+    try:
+        industry_div = apply_div.find_element_by_xpath("//div[@id='ind_dd_qup']")
+        industry_input = industry_div.find_element_by_xpath("//input[@id='qupInd']")
+        industry_input.click()
+        wait()
+        industry_drop = industry_div.find_elements_by_xpath(".//div[@class='sDrop']//ul/li")
+
+        print "Len = ", len(industry_drop)
+
+        random_value = random.randrange(1, len(industry_drop))
+        for i, li_div in enumerate(industry_drop):
+            if i == random_value:
+                actions = ActionChains(driver)
+                actions.move_to_element(li_div)
+                actions.click(li_div)
+                actions.perform()
+                # li_div.click()
+
+                print "Select Industry", li_div.text
+                wait()
+    except:
+        print "Not Found Industry"
+
+    
     print "Click Submit Button"
     actions = ActionChains(driver)
     actions.move_to_element(submit_btn)
@@ -503,9 +546,12 @@ def update_and_apply(self_driver):
     institute_err = html.x("//i[@id='Sug_ugInst_err']/text()").strip()
     salary_min_err = html.x("//i[@id='qupMinSal_err']/text()").strip()
     resume_err = html.x("//i[@id='resHd_err']/text()").strip()
+    ind_err = html.x("//i[@id='qupInd_err']/text()").strip()
     
-    if passing_year_err != "" or institute_err == "" or salary_min_err == "" or resume_err == "":
+    if passing_year_err != "" or institute_err != "" or salary_min_err != "" or resume_err != "" or ind_err != "":
         print "manadatory field is required"
+    else:
+        total_applied_job_count += 1
 
 if __name__ == '__main__':
     #create_url()
