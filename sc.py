@@ -158,7 +158,7 @@ def create_url():
         driver.find_element_by_xpath("//button[@id='qsbFormBtn']").click()
         wait_medium()
 
-        print "Sory by date"        
+        print "Sort by date"        
         sort_div = driver.find_element_by_xpath("//div[@class='sortBy']")
         sort_div.click()
         wait()
@@ -248,14 +248,15 @@ def create_url():
                 driver.close()
                 continue
             
-            if skip_and_apply(driver) == True:
-                continue
+            if skip_and_apply(driver) == False:
+                # Skip and apply not found
+                print "Update and Apply button detect"
+                update_and_apply(driver) 
             
-            # Skip and apply not found
-            print "Update and Apply button detect"
-            update_and_apply(driver) 
-               
-            driver.close()
+            for i, handle in enumerate(driver.window_handles):
+                if i != 0:
+                    driver.switch_to.window(handle)
+                    driver.close()
        
     except TimeoutException as ex:
         print('***********Exception1*************')
