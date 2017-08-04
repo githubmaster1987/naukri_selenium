@@ -113,8 +113,22 @@ def create_url():
 
         pwd_obj.send_keys(Keys.ENTER)
         wait_medium()
-        
+
+        # url = "https://www.naukri.com/job-listings-Financial-Analyst-Financial-Modelling-corporate-Finance-6-to-10-year-Synophic-Systems-Private-Limited-Mumbai-6-to-8-years-020817008328?src=jobsearchDesk&sid=15017381397620&xp=3&qp=finance&srcPage=s"
+        # driver.get(url)
+        # wait_medium()
+
+        # html_page = Doc(html = driver.page_source)
+
+        # job_desc = html_page.q("//div[@class='JD']//text()").join(" ")
+
+        # print "************************"
+        # print job_desc
+        # return
+
         for key_index, keyword in enumerate(keywords):
+            total_applied_job_count = 0
+            
             wait_medium()
             driver.get(start_url)
             wait()
@@ -189,14 +203,36 @@ def create_url():
                     stop_find_job = True
                     break
 
+                job_title = job_listing.find_element_by_xpath("//ul/li[@itemprop='title']").get_attribute("title")
+
+                nkeyword_exist = False
+                for nkeyword in config.nkeywords:
+                    if nkeyword in job_title:
+                        nkeyword_exist = True
+
+                if nkeyword_exist == True:
+                    continue
+
                 job_listing.click()
                 driver.switch_to.window(driver.window_handles[1])
                 wait_medium()
+                
+                html_page = Doc(html = driver.page_source)
 
-                # url = "https://www.naukri.com/job-listings-Strategic-Account-Manager-Japanese-Clients-Dimension-Data-India-Pvt-Ltd-Mumbai-4-to-9-years-040717003261?src=sortby&sid=15004307983089&xp=2&qp=finance&srcPage=s"
-                # driver.get(url)
-                # wait_medium()
+                job_desc = html_page.q("//div[@class='JD']//text()").join(" ").strip()
 
+                print "**************************"
+                print job_desc
+                
+                nkeyword_exist = False
+                for nkeyword in config.nkeywords:
+                    if nkeyword in job_title:
+                        nkeyword_exist = True
+
+
+                if job_desc == "" or nkeyword_exist == True:
+                    continue
+                
                 WebDriverWait(driver, DRIVER_WAITING_SECONDS).until(
                     AnyEc(
                         EC.presence_of_element_located(

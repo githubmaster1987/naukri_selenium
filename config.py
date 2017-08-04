@@ -16,3 +16,10 @@ keywords = [
 	{"Skill":"sales", "Location":"mumbai", "Experience":3, "Salary":4},
 	{"Skill":"marketing", "Location":"delhi", "Experience":5, "Salary":3}
 ]
+
+
+nkeywords = [
+	"nkeyword1",
+	"nkeyword2",
+	"nkeyword3"
+]
