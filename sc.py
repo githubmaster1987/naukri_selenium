@@ -58,6 +58,7 @@ keywords = config.keywords
 
 total_applied_job_count = 0
 
+screenshot_enable = True
 class AnyEc:
     """ Use with WebDriverWait to combine expected_conditions
         in an OR.
@@ -72,6 +73,11 @@ class AnyEc:
                 if fn(driver): return True
             except:
                 pass
+
+def put_screenshot(file_name):
+    if screenshot_enable == True:
+        driver.save_screenshot("logs/" + file_name)
+
 def wait():
     sleep(random.randrange(1, DRIVER_SHORT_WAITING_SECONDS))
 
@@ -100,6 +106,7 @@ def create_url():
         driver.get(start_url)
         wait()
 
+        put_screenshot("login.png");
         print "Login with user"
         driver.find_element_by_xpath("//a[@id='login_Layer']").click()
         wait()
@@ -132,7 +139,8 @@ def create_url():
             wait_medium()
             driver.get(start_url)
             wait()
-
+            
+            put_screenshot("search.png");    
             search_div = driver.find_element_by_xpath("//div[@class='qsbfield']")
 
             #finance, mumbai, 5, 8
@@ -177,9 +185,22 @@ def create_url():
 
             print "Sort by date"        
             sort_div = driver.find_element_by_xpath("//div[@class='sortBy']")
-            sort_div.click()
-            wait()
-            sort_div.find_element_by_xpath("//ul[@class='list']/li[contains(text(), 'Date')]").click()
+            # sort_div.click()
+            actions = ActionChains(driver)
+            actions.move_to_element(sort_div)
+            actions.click(sort_div)
+            actions.perform()
+            wait_medium()
+
+            put_screenshot("sortby.png");    
+            sort_date_div = sort_div.find_element_by_xpath("//ul[@class='list']/li[contains(text(), 'Date')]")
+            actions = ActionChains(driver)
+            actions.move_to_element(sort_date_div)
+            actions.click(sort_date_div)
+            actions.perform()
+            wait_medium()
+
+            put_screenshot("job_listing.png");    
 
             print "Loading job listing"
             job_listings = driver.find_elements_by_xpath("//div[contains(@class, 'srp_container fl')]//div[@type='tuple']")
@@ -213,7 +234,18 @@ def create_url():
                 if nkeyword_exist == True:
                     continue
 
-                job_listing.click()
+                actions = ActionChains(driver)
+                actions.move_to_element(job_listing)
+                actions.click(job_listing)
+                actions.perform()
+
+                # job_listing.click()
+                wait_medium()
+                
+                print "**************************"                
+                print job_title
+                # print driver.window_handles
+                
                 driver.switch_to.window(driver.window_handles[1])
                 wait_medium()
                 
@@ -221,8 +253,8 @@ def create_url():
 
                 job_desc = html_page.q("//div[@class='JD']//text()").join(" ").strip()
 
-                print "**************************"
-                print job_desc
+                # print "**************************"
+                # print job_desc
                 
                 nkeyword_exist = False
                 for nkeyword in config.nkeywords:
@@ -243,7 +275,8 @@ def create_url():
                         )
                     )
                 )
-
+                put_screenshot("apply.png");    
+            
                 print "Find Apply Button"
                 apply_btn = None
                 try:
@@ -293,9 +326,12 @@ def create_url():
                     close_tabs(driver)
                     continue
                 
+                put_screenshot("skip_and_apply.png");    
+            
                 if skip_and_apply(driver) == False:
                     # Skip and apply not found
                     print "Update and Apply button detect"
+                    put_screenshot("update_and_apply.png");    
                     update_and_apply(driver, keyword) 
                 
                 close_tabs(driver)
@@ -600,6 +636,8 @@ if __name__ == '__main__':
     threads_number = args.threads
     proxy_type = args.proxy
 
-    driver = common_lib.create_chrome_driver(None)
+    driver, ua, proxy_ip, screen_resolution = common_lib.create_phantomjs_driver()
+    print driver
+    # driver = common_lib.create_chrome_driver(None)
     create_url() 
     common_lib.phantom_Quit(driver)
