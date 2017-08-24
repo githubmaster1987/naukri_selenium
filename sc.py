@@ -441,6 +441,8 @@ def question_apply(self_driver):
     skip_and_apply(driver)
 
 def update_and_apply(self_driver, keyword):
+    global total_applied_job_count
+    
     driver = self_driver
 
     button_value_str = ""
