@@ -417,19 +417,22 @@ def question_apply(self_driver):
 
     for quetion_div in question_divs:
         input_options = quetion_div.find_elements_by_xpath(".//ul[@class='ans']/li/input")
-        # print "Len = ", len(input_options)
-        random_value = random.randrange(0, len(input_options))
         
-        for i, li_div in enumerate(input_options):
-            if i == random_value:
-                actions = ActionChains(driver)
-                actions.move_to_element(li_div)
-                actions.click(li_div)
-                actions.perform()
+        print "Len = ", len(input_options)
 
-                print "Select Answer", li_div.get_attribute("value")
-                # li_div.click()
-                wait()
+        if len(input_options) > 0:
+            random_value = random.randrange(0, len(input_options))
+            
+            for i, li_div in enumerate(input_options):
+                if i == random_value:
+                    actions = ActionChains(driver)
+                    actions.move_to_element(li_div)
+                    actions.click(li_div)
+                    actions.perform()
+
+                    print "Select Answer", li_div.get_attribute("value")
+                    # li_div.click()
+                    wait()
 
     print "Click Submit Button"
     actions = ActionChains(driver)
@@ -442,7 +445,7 @@ def question_apply(self_driver):
 
 def update_and_apply(self_driver, keyword):
     global total_applied_job_count
-    
+
     driver = self_driver
 
     button_value_str = ""
