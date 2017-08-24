@@ -280,11 +280,11 @@ def create_url():
                 print "Find Apply Button"
                 apply_btn = None
                 try:
-                    apply_btn = driver.find_element_by_xpath("//button[contains(text(), 'Apply')]")
+                    apply_btn = driver.find_element_by_xpath("//button[text()='Apply']")
                 except Exception as e:
                     #print e
                     try:
-                        apply_btn = driver.find_element_by_xpath("//a[contains(text(), 'Apply')]")
+                        apply_btn = driver.find_element_by_xpath("//a[text()='Apply')]")
                     except Exception as e:
                         #print e
                         pass
