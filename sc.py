@@ -282,11 +282,11 @@ def create_url():
                 try:
                     apply_btn = driver.find_element_by_xpath("//button[text()='Apply']")
                 except Exception as e:
-                    #print e
+                    print e
                     try:
                         apply_btn = driver.find_element_by_xpath("//a[text()='Apply')]")
                     except Exception as e:
-                        #print e
+                        print e
                         pass
                 
                 #print apply_btn
