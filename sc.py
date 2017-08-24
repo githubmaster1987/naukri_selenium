@@ -289,7 +289,7 @@ def create_url():
                         print e
                         pass
                 
-                #print apply_btn
+                print apply_btn
 
                 if apply_btn != None:
                     actions = ActionChains(driver)
