@@ -58,7 +58,7 @@ keywords = config.keywords
 
 total_applied_job_count = 0
 
-screenshot_enable = True
+screenshot_enable = False
 class AnyEc:
     """ Use with WebDriverWait to combine expected_conditions
         in an OR.
@@ -280,24 +280,24 @@ def create_url():
                     print "+++++++++++++++++ Can't Apply 2 +++++++++++++++++"
                     continue
                 
-                WebDriverWait(driver, DRIVER_WAITING_SECONDS).until(
-                    AnyEc(
-                        EC.presence_of_element_located(
-                            (By.XPATH, "//button[contains(text(), 'Apply')]")
-                        ),
-                        EC.presence_of_element_located(
-                            (By.XPATH, "//a[contains(text(), 'Apply')]")
-                        )
-                    )
-                )
-                put_screenshot("apply.png");    
+                # WebDriverWait(driver, DRIVER_WAITING_SECONDS).until(
+                #     AnyEc(
+                #         EC.presence_of_element_located(
+                #             (By.XPATH, "//button[contains(text(), 'Apply')]")
+                #         ),
+                #         EC.presence_of_element_located(
+                #             (By.XPATH, "//a[contains(text(), 'Apply')]")
+                #         )
+                #     )
+                # )
+                # put_screenshot("apply.png");    
                 
                 print "**************************"            
                 print "Find Apply Button"
                 apply_btn = None
                 try:
                     for item_div in driver.find_elements_by_xpath("//button"):
-                        button_text = item_div.get_attribute('text')
+                        button_text = item_div.text
                         print button_text
 
                         if button_text == "Apply":
@@ -307,7 +307,7 @@ def create_url():
                     # print e
                     try:
                         for item_div in driver.find_elements_by_xpath("//a"):
-                            button_text = item_div.get_attribute('text')
+                            button_text = item_div.text
                             print button_text
 
                             if button_text == "Apply":
