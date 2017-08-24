@@ -276,7 +276,8 @@ def create_url():
                     )
                 )
                 put_screenshot("apply.png");    
-            
+                
+                print "**************************"            
                 print "Find Apply Button"
                 apply_btn = None
                 try:
