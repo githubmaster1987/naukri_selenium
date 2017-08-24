@@ -76,7 +76,7 @@ class AnyEc:
 
 def put_screenshot(file_name):
     if screenshot_enable == True:
-        print file_name + " was saved."
+        print "++++++++++++++++" + file_name + " was saved."
         driver.save_screenshot("logs/" + file_name)
 
 def wait():
@@ -212,8 +212,19 @@ def create_url():
             print "Jobs = ", len(job_listings)
 
             for job_ind, job_listing in enumerate(job_listings):
+                print "******************** Handles *******************"
+                print driver.window_handles
+
+                for handle_id in driver.window_handles:
+                    if handle_id != main_window_handle:
+                        driver.switch_to.window(handle_id)
+                        close_tabs(driver)
+
+                print "******************** Handles After removing *******************"
+                print driver.window_handles
+
                 driver.switch_to.window(main_window_handle)
-                post_date_str = job_listing.find_element_by_xpath("//div[@class='rec_details']/span").text
+                post_date_str = job_listing.find_element_by_xpath(".//div[@class='rec_details']/span").text
 
                 print "****************************"
                 print "Search Index = ", key_index
@@ -225,7 +236,7 @@ def create_url():
                     stop_find_job = True
                     break
 
-                job_title = job_listing.find_element_by_xpath("//ul/li[@itemprop='title']").get_attribute("title")
+                job_title = job_listing.find_element_by_xpath(".//ul/li[@itemprop='title']").get_attribute("title")
 
                 nkeyword_exist = False
                 for nkeyword in config.nkeywords:
@@ -233,6 +244,7 @@ def create_url():
                         nkeyword_exist = True
 
                 if nkeyword_exist == True:
+                    print "+++++++++++++++++ Can't Apply 1 +++++++++++++++++"
                     continue
 
                 actions = ActionChains(driver)
@@ -245,11 +257,12 @@ def create_url():
                 
                 print "**************************"                
                 print job_title
-                # print driver.window_handles
+                
                 
                 driver.switch_to.window(driver.window_handles[1])
                 wait_medium()
                 
+                put_screenshot("job_desc.png");
                 html_page = Doc(html = driver.page_source)
 
                 job_desc = html_page.q("//div[@class='JD']//text()").join(" ").strip()
@@ -263,7 +276,8 @@ def create_url():
                         nkeyword_exist = True
 
 
-                if job_desc == "" or nkeyword_exist == True:
+                if (job_desc == "") or (nkeyword_exist == True):
+                    print "+++++++++++++++++ Can't Apply 2 +++++++++++++++++"
                     continue
                 
                 WebDriverWait(driver, DRIVER_WAITING_SECONDS).until(
@@ -282,15 +296,28 @@ def create_url():
                 print "Find Apply Button"
                 apply_btn = None
                 try:
-                    apply_btn = driver.find_element_by_xpath("//button[text()='Apply']")
+                    for item_div in driver.find_elements_by_xpath("//button"):
+                        button_text = item_div.get_attribute('text')
+                        print button_text
+
+                        if button_text == "Apply":
+                            apply_btn = item_div
+
                 except Exception as e:
-                    print e
+                    # print e
                     try:
-                        apply_btn = driver.find_element_by_xpath("//a[text()='Apply')]")
+                        for item_div in driver.find_elements_by_xpath("//a"):
+                            button_text = item_div.get_attribute('text')
+                            print button_text
+
+                            if button_text == "Apply":
+                                apply_btn = item_div
+
                     except Exception as e:
-                        print e
+                        # print e
                         pass
                 
+                print "*****************************"
                 print apply_btn
 
                 if apply_btn != None:
