@@ -76,6 +76,7 @@ class AnyEc:
 
 def put_screenshot(file_name):
     if screenshot_enable == True:
+        print file_name + " was saved."
         driver.save_screenshot("logs/" + file_name)
 
 def wait():
